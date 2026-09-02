@@ -62,3 +62,6 @@ class LoggingTracer(Tracer):
                 "span_end name=%s id=%s status=%s duration_ms=%s output=%r usage=%r error=%s",
                 name, span_id, status, duration_ms, handle.output, handle.usage, handle.error,
             )
+
+    def flush(self) -> None:
+        pass  # nothing buffered — every span is logged synchronously as it happens

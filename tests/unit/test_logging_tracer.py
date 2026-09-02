@@ -50,3 +50,7 @@ def test_set_usage_appears_in_end_log(caplog):
 
     messages = [r.message for r in caplog.records]
     assert any("gpt-4o-mini" in m and "status=ok" in m for m in messages)
+
+
+def test_flush_is_a_harmless_noop():
+    LoggingTracer().flush()  # nothing buffered; must not raise

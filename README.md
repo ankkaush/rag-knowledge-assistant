@@ -108,7 +108,9 @@ python -m evaluation.run_eval --reranker compare        # before/after reranking
 
 Every ingestion and every query is wrapped in a trace, with a nested child span per pipeline step (`extract`, `clean_and_chunk`, `embed_batch`, `store` for ingestion; `retrieve`, `route_decision`, `generate` for queries). If `LANGFUSE_PUBLIC_KEY`/`LANGFUSE_SECRET_KEY` are set, spans go to Langfuse; otherwise they're logged locally with zero external dependency — "no Langfuse configured" is a normal, fully-supported state, not a degraded one.
 
-A document can be flagged `sensitive` at upload time. If any retrieved chunk comes from a sensitive document, that query's prompt and answer are redacted from the trace (only counts, model, and token usage are recorded) — the same flag also drives which model actually answers the request (see [AI / ML components](#ai--ml-components) above). A Langfuse outage never breaks a request: every SDK call is individually wrapped, and tracing failures fall back to a no-op rather than propagating.
+A document can be flagged `sensitive` at upload time. If any retrieved chunk comes from a sensitive document, that query's prompt and answer are redacted from the trace (only counts, model, and token usage are recorded) — the same flag also drives which model actually answers the request (see [AI / ML components](#ai--ml-components) above). A Langfuse outage never breaks a request: every SDK call is individually wrapped, and tracing failures fall back to a no-op rather than propagating. Spans are flushed on application shutdown so a clean stop doesn't rely solely on the SDK's own background export interval.
+
+To see real traces in Langfuse Cloud: set `LANGFUSE_PUBLIC_KEY`/`LANGFUSE_SECRET_KEY`/`LANGFUSE_HOST` in `.env` (see `.env.example` for how to get them), then run `python -m scripts.langfuse_demo` — it ingests two demo documents and runs two representative queries (one normal, one against a sensitive-flagged document) through the real pipeline, so the resulting traces show retrieval, generation with model/token usage, and redaction, exactly as production traffic would produce them.
 
 ## Security
 

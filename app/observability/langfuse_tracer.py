@@ -114,3 +114,9 @@ class LangfuseTracer(Tracer):
                     lf_context_manager.__exit__(None, None, None)
                 except Exception:
                     logger.warning("langfuse_span_end_failed name=%s", name, exc_info=True)
+
+    def flush(self) -> None:
+        try:
+            self._client.flush()
+        except Exception:
+            logger.warning("langfuse_flush_failed", exc_info=True)

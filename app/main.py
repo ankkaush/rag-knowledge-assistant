@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,6 +45,7 @@ from app.core.auth import require_api_key
 from app.core.config import settings, validate_production_config
 from app.core.errors import AppError
 from app.core.rate_limit import RateLimitMiddleware
+from app.observability import get_tracer
 
 logging.basicConfig(level=settings.log_level)
 logger = logging.getLogger("rag")
@@ -55,7 +57,22 @@ if problems:
         + "\n".join(f"  - {p}" for p in problems)
     )
 
-app = FastAPI(title="RAG Knowledge Assistant", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    yield
+    # Langfuse exports spans asynchronously in the background (see
+    # app/observability/langfuse_tracer.py); flushing on shutdown means a
+    # clean server stop doesn't rely solely on the SDK's own atexit hook to
+    # deliver the last few requests' traces. A no-op when LoggingTracer is
+    # active. get_tracer() constructs a new client object here, but Langfuse's
+    # SDK keys its actual background resources by public key, so this still
+    # flushes the same buffered data any other tracer instance created during
+    # this process's lifetime — confirmed by reading the SDK's resource-manager
+    # source, not assumed.
+    get_tracer().flush()
+
+
+app = FastAPI(title="RAG Knowledge Assistant", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(RateLimitMiddleware)
 

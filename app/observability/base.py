@@ -64,3 +64,18 @@ class Tracer(ABC):
         swallowed, never the pipeline's own errors.
         """
         ...
+
+    @abstractmethod
+    def flush(self) -> None:
+        """
+        Force any buffered spans to be sent now, rather than waiting for the
+        backend's own batching schedule. A no-op for LoggingTracer (nothing
+        is buffered). For LangfuseTracer, this matters because the SDK
+        exports spans asynchronously in the background — without an explicit
+        flush, a short-lived process (a demo script, a one-off request) can
+        exit before its spans are actually sent. Called on FastAPI shutdown
+        (app/main.py) and by anything that wants a deterministic guarantee
+        that "the spans I just created have been sent," e.g. a demo script
+        verifying a trace landed in Langfuse Cloud.
+        """
+        ...
