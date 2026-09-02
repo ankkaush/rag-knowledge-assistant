@@ -19,6 +19,7 @@ import app.api.query as query_module
 import app.api.retrieval as retrieval_module
 from app.core.config import settings
 from app.main import app
+from app.observability.logging_tracer import LoggingTracer
 from app.providers.embeddings.fake_provider import FakeEmbeddingProvider
 from app.providers.llm.fake_provider import FakeLLMProvider
 from app.providers.llm.ollama_provider import OllamaChatProvider
@@ -36,6 +37,14 @@ def use_fake_providers(monkeypatch):
     monkeypatch.setattr(retrieval_module, "get_embedding_provider", lambda: fake_embeddings)
     monkeypatch.setattr(query_module, "get_embedding_provider", lambda: fake_embeddings)
     monkeypatch.setattr(query_module, "get_llm_provider", lambda: FakeLLMProvider())
+    # These routes call get_tracer() directly (not dependency-injected) — the
+    # real one now resolves to LangfuseTracer whenever real credentials are
+    # configured in .env, which would send every test request as a real trace
+    # to whatever Langfuse project is configured. Force LoggingTracer here so
+    # this test file's behavior never depends on what's in a developer's .env.
+    monkeypatch.setattr(ingestion_module, "get_tracer", lambda: LoggingTracer())
+    monkeypatch.setattr(retrieval_module, "get_tracer", lambda: LoggingTracer())
+    monkeypatch.setattr(query_module, "get_tracer", lambda: LoggingTracer())
 
 
 @requires_db

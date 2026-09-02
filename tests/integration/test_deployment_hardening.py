@@ -13,6 +13,7 @@ import app.api.ingestion as ingestion_module
 import app.api.retrieval as retrieval_module
 from app.core import config
 from app.main import app
+from app.observability.logging_tracer import LoggingTracer
 from app.providers.embeddings.fake_provider import FakeEmbeddingProvider
 from tests.integration.conftest import requires_db
 
@@ -24,6 +25,11 @@ def use_fake_embeddings(monkeypatch):
     fake_embeddings = FakeEmbeddingProvider(dimensions=1536)
     monkeypatch.setattr(ingestion_module, "get_embedding_provider", lambda: fake_embeddings)
     monkeypatch.setattr(retrieval_module, "get_embedding_provider", lambda: fake_embeddings)
+    # See tests/integration/test_api.py for why this matters: these routes
+    # call get_tracer() directly, which resolves to a real LangfuseTracer
+    # whenever real credentials are configured in .env.
+    monkeypatch.setattr(ingestion_module, "get_tracer", lambda: LoggingTracer())
+    monkeypatch.setattr(retrieval_module, "get_tracer", lambda: LoggingTracer())
 
 
 @requires_db

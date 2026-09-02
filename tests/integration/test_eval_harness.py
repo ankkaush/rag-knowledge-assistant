@@ -24,12 +24,13 @@ def test_load_questions_matches_dataset_shape():
 
 
 @requires_db
-def test_run_evaluation_end_to_end_with_fake_providers(db_session):
+def test_run_evaluation_end_to_end_with_fake_providers(db_session, tracer):
     report = run_evaluation(
         embedding_provider=FakeEmbeddingProvider(dimensions=1536),
         llm_provider=FakeLLMProvider(),
         top_k=5,
         run_ragas=False,  # scoring a fake echo LLM with RAGAS is meaningless
+        tracer=tracer,  # LoggingTracer fixture — never send test traffic to a real Langfuse project
     )
 
     questions = load_questions()
@@ -56,7 +57,7 @@ def test_run_evaluation_end_to_end_with_fake_providers(db_session):
 
 
 @requires_db
-def test_run_evaluation_is_idempotent_on_corpus_ingestion(db_session):
+def test_run_evaluation_is_idempotent_on_corpus_ingestion(db_session, tracer):
     # Running twice should not error or duplicate corpus documents/chunks —
     # this exercises the same idempotency guarantee tested directly in
     # test_ingestion_service.py, now through the harness's ingest step.
@@ -65,11 +66,13 @@ def test_run_evaluation_is_idempotent_on_corpus_ingestion(db_session):
         llm_provider=FakeLLMProvider(),
         top_k=5,
         run_ragas=False,
+        tracer=tracer,  # LoggingTracer fixture — never send test traffic to a real Langfuse project
     )
     report2 = run_evaluation(
         embedding_provider=FakeEmbeddingProvider(dimensions=1536),
         llm_provider=FakeLLMProvider(),
         top_k=5,
         run_ragas=False,
+        tracer=tracer,
     )
     assert report1["summary"]["question_count"] == report2["summary"]["question_count"]
