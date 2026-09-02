@@ -18,13 +18,13 @@ A retrieval-augmented question-answering backend that answers questions from you
 | Retrieval — optional local cross-encoder reranking | ✅ Complete — verified against a real Hugging Face model running locally |
 | Evaluation — deterministic retrieval/refusal metrics | ✅ Complete, verified |
 | Evaluation — RAGAS LLM-judge metrics (faithfulness, relevance, context precision) | ⚠️ Implemented and code-reviewed — not yet exercised against a live OpenAI judge (no API key configured in development) |
-| Observability — request tracing | ✅ Complete — falls back to a zero-dependency local tracer when Langfuse isn't configured; Langfuse SDK integration implemented against verified call signatures but not yet exercised against a live Langfuse project |
+| Observability — request tracing | ✅ Complete — falls back to a zero-dependency local tracer when Langfuse isn't configured; verified end-to-end against a real Langfuse Cloud project, confirmed via the Langfuse API (real model, real token counts, and correct redaction on a sensitive-flagged document) |
 | Hybrid inference — routing to a local model | ✅ Complete — verified end-to-end with a real local model (Ollama) installed and running |
 | Hybrid inference — routing to the API model | ⚠️ Routing logic verified; the real OpenAI generation call itself hasn't been exercised (no API key configured in development) |
 | Deployment hardening (auth, rate limiting, CORS, fail-fast config check) | ✅ Complete — verified directly, including a boot-refusal test for unsafe production settings |
 | Live cloud deployment | ⏸️ Not deployed — deliberately out of scope for this stage, see [Deployment status](#deployment-status) |
 
-**Tests: 112/112 passing.** Everything above marked ⚠️ is implemented, unit-tested, and reviewed against the real provider's documented behavior — what's missing is a live call using real paid credentials, not missing code. See [Documentation](#documentation) for the full detail behind every line in this table.
+**Tests: 116/116 passing.** Everything above marked ⚠️ is implemented, unit-tested, and reviewed against the real provider's documented behavior — what's missing is a live call using real paid credentials, not missing code. See [Documentation](#documentation) for the full detail behind every line in this table.
 
 ## How it works
 
@@ -124,7 +124,7 @@ Full checklist, including what's deliberately deferred and why, in [`DEPLOYMENT.
 
 ## Testing
 
-**112/112 tests passing.** Unit tests need nothing external. Integration tests run against a real Postgres/pgvector instance (via Docker) using deterministic fake embedding/LLM providers by default, so the suite needs no API key to run; tests that exercise a real local model (Ollama) or a real Hugging Face cross-encoder skip automatically when that dependency isn't available, rather than failing.
+**116/116 tests passing.** Unit tests need nothing external. Integration tests run against a real Postgres/pgvector instance (via Docker) using deterministic fake embedding/LLM providers by default, so the suite needs no API key to run; tests that exercise a real local model (Ollama) or a real Hugging Face cross-encoder skip automatically when that dependency isn't available, rather than failing.
 
 ```bash
 pytest tests/ -v
