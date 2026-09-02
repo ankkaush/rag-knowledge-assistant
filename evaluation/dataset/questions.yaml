@@ -1,0 +1,98 @@
+# Phase 3 evaluation dataset.
+#
+# WHY THIS STRUCTURE (a deliberate departure from "reference_chunk_ids"):
+# The original plan referenced pinning eval items to specific reference_chunk_ids.
+# In practice, chunk IDs are server-generated UUIDs, regenerated on every
+# re-ingestion — they cannot be checked into a version-controlled dataset file
+# and stay valid. Instead, each item pins to `expected_source_uri` (the corpus
+# filename, stable across re-ingestion) and the retrieval metrics below check
+# whether chunks from the RIGHT DOCUMENT were retrieved, not the same exact
+# chunk boundaries. This is a conscious trade: slightly coarser-grained than
+# per-chunk recall, but robust to chunking-strategy changes (which is exactly
+# the kind of change Phase 3 exists to let us evaluate safely).
+#
+# category: "factual" (answerable from the corpus) or "unanswerable" (tests
+# that the system correctly refuses rather than hallucinating from outside
+# knowledge — this is the PROMPT-LEVEL grounding guarantee, since retrieval
+# will still return *some* chunks for an unanswerable question; it's the LLM
+# that must recognize they don't actually answer it).
+
+- id: q1
+  question: "In what year was construction of the Eiffel Tower completed?"
+  expected_source_uri: eiffel_tower.txt
+  expected_keywords: ["1889"]
+  category: factual
+
+- id: q2
+  question: "How tall is the Eiffel Tower?"
+  expected_source_uri: eiffel_tower.txt
+  expected_keywords: ["330 meters", "330"]
+  category: factual
+
+- id: q3
+  question: "Who designed the Eiffel Tower and what did he use the top of it for?"
+  expected_source_uri: eiffel_tower.txt
+  expected_keywords: ["gustave eiffel", "experiments"]
+  reference_answer: "Gustave Eiffel designed the tower, and he used his apartment at the top to conduct scientific experiments, including meteorology and radio transmission research."
+  category: factual
+
+- id: q4
+  question: "How often is the Eiffel Tower repainted?"
+  expected_source_uri: eiffel_tower.txt
+  expected_keywords: ["seven years"]
+  category: factual
+
+- id: q5
+  question: "Who created the Python programming language and when was it first released?"
+  expected_source_uri: python_language.md
+  expected_keywords: ["guido van rossum", "1991"]
+  reference_answer: "Python was created by Guido van Rossum and first released in 1991."
+  category: factual
+
+- id: q6
+  question: "What is the reference implementation of Python called?"
+  expected_source_uri: python_language.md
+  expected_keywords: ["cpython"]
+  category: factual
+
+- id: q7
+  question: "When did Python 2 reach end of life?"
+  expected_source_uri: python_language.md
+  expected_keywords: ["january 1, 2020", "2020"]
+  category: factual
+
+- id: q8
+  question: "What tool is commonly used to install Python packages, and where do those packages come from?"
+  expected_source_uri: python_language.md
+  expected_keywords: ["pip", "python package index", "pypi"]
+  category: factual
+
+- id: q9
+  question: "How many paid time off days do full-time employees accrue per year at Acme Robotics?"
+  expected_source_uri: remote_work_policy.txt
+  expected_keywords: ["20 days"]
+  category: factual
+
+- id: q10
+  question: "How many days per week must hybrid employees be in the office at Acme Robotics?"
+  expected_source_uri: remote_work_policy.txt
+  expected_keywords: ["two days"]
+  category: factual
+
+- id: q11
+  question: "What is the home office equipment stipend for approved remote employees at Acme Robotics?"
+  expected_source_uri: remote_work_policy.txt
+  expected_keywords: ["500 dollars", "500"]
+  category: factual
+
+- id: q12
+  question: "What is the capital of Japan?"
+  expected_source_uri: null
+  expected_keywords: []
+  category: unanswerable
+
+- id: q13
+  question: "What was Acme Robotics' revenue last quarter?"
+  expected_source_uri: null
+  expected_keywords: []
+  category: unanswerable
